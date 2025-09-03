@@ -75,7 +75,7 @@ class ChristoffelSymbols(BaseRelativityTensor):
                         + sympy.diff(mat[n, k], syms[j])
                         - sympy.diff(mat[j, k], syms[n])
                     )
-                tmplist[i][j][k] = tmplist[i][k][j] = tmpvar
+                tmplist[i][j][k] = tmplist[i][k][j] = -tmpvar
         return cls(tmplist, syms, config="ull", parent_metric=metric)
 
     def change_config(self, newconfig="lll", metric=None):
