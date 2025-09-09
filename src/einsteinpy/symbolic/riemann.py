@@ -53,7 +53,7 @@ class RiemannCurvatureTensor(BaseRelativityTensor):
             raise ValueError("config should be of length {}".format(self._order))
 
     @classmethod
-    def from_christoffels(cls, chris, parent_metric=None):
+    def from_christoffels(cls, chris, parent_metric=None, simplify=True):
         """
         Get Riemann Tensor calculated from Christoffel Symbols.
         Reimann Tensor is given as:
@@ -72,6 +72,8 @@ class RiemannCurvatureTensor(BaseRelativityTensor):
             Defaults to None.
 
         """
+        simplify_function = sympy.simplify if simplify else (lambda x: x)
+
         if not chris.config == "ull":
             chris = chris.change_config(newconfig="ull", metric=parent_metric)
         arr, syms = chris.tensor(), chris.symbols()
@@ -87,7 +89,7 @@ class RiemannCurvatureTensor(BaseRelativityTensor):
             temp = sympy.diff(arr[t, s, n], syms[r]) - sympy.diff(arr[t, s, r], syms[n])
             for p in range(dims):
                 temp += arr[p, s, n] * arr[t, p, r] - arr[p, s, r] * arr[t, p, n]
-            riemann_list[t][s][r][n] = sympy.simplify(temp)
+            riemann_list[t][s][r][n] = simplify_function(temp)
         if parent_metric is None:
             parent_metric = chris.parent_metric
         return cls(riemann_list, syms, config="ulll", parent_metric=parent_metric)

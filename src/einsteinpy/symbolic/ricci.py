@@ -49,7 +49,7 @@ class RicciTensor(BaseRelativityTensor):
             raise ValueError("config should be of length {}".format(self._order))
 
     @classmethod
-    def from_riemann(cls, riemann, parent_metric=None):
+    def from_riemann(cls, riemann, parent_metric=None, simplify=True):
         """
         Get Ricci Tensor calculated from Riemann Tensor
 
@@ -63,19 +63,21 @@ class RicciTensor(BaseRelativityTensor):
             Defaults to None.
 
         """
+        simplify_function = simplify_sympy_array if simplify else (lambda x: x)
+
         if not riemann.config == "ulll":
             riemann = riemann.change_config(newconfig="ulll", metric=parent_metric)
         if parent_metric is None:
             parent_metric = riemann.parent_metric
         return cls(
-            simplify_sympy_array(sympy.tensorcontraction(riemann.tensor(), (0, 2))),
+            simplify_function(sympy.tensorcontraction(riemann.tensor(), (0, 2))),
             riemann.syms,
             config="ll",
             parent_metric=parent_metric,
         )
 
     @classmethod
-    def from_christoffels(cls, chris, parent_metric=None):
+    def from_christoffels(cls, chris, parent_metric=None, simplify=True):
         """
         Get Ricci Tensor calculated from Christoffel Tensor
 
@@ -90,9 +92,9 @@ class RicciTensor(BaseRelativityTensor):
 
         """
         rt = RiemannCurvatureTensor.from_christoffels(
-            chris, parent_metric=parent_metric
+            chris, parent_metric=parent_metric, simplify=False
         )
-        return cls.from_riemann(rt)
+        return cls.from_riemann(rt, simplify=simplify)
 
     @classmethod
     def from_metric(cls, metric):
